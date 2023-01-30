@@ -2,6 +2,26 @@ const fs = require('fs');
 
 const tours = JSON.parse(fs.readFileSync('./dev-data/data/tours-simple.json'));
 
+exports.checkID = (req, res, next, val) => {
+    if(req.params.id * 1 > tours.length){
+        return res.status(404).json({
+            status: 'fail',
+            message: 'Invalid ID'
+        });
+    }
+    next();
+}
+
+exports.checkBody = (req, res, next) => {
+    if(!req.body.name || !req.body.price){
+        return res.status(400).json({
+            status: 'fail',
+            message: 'name, price not present'
+        })
+    }
+    next();
+}
+
 exports.getAllTours = (req, res) => {
     res.status(200).json({
         status: 'success',
@@ -57,13 +77,6 @@ exports.addNewTours = (req, res) => {
 }
 
 exports.updateTour = (req,res) => {
-    if(req.params.id * 1 > tours.length){
-        res.status(404).json({
-            status: 'fail',
-            message: 'Invalid ID'
-        });
-    }
-    
     res.status(201).json({
         status: 'update',
         message: 'file(s) updated'
@@ -71,13 +84,6 @@ exports.updateTour = (req,res) => {
 }
 
 exports.deleteTour = (req, res) => {
-    if(req.params.id*1 > tours.length){
-        res.status(404).json({
-            status: 'fail',
-            message: 'Invalid ID'
-        })
-    }
-
     res.status(204).json({
         status: 'deleted',
         message: null
