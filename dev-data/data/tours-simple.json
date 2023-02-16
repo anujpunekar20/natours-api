@@ -133,14 +133,5 @@
     "imageCover": "tour-9-cover.jpg",
     "images": ["tour-9-1.jpg", "tour-9-2.jpg", "tour-9-3.jpg"],
     "startDates": ["2021-12-16,10:00", "2022-01-16,10:00", "2022-12-12,10:00"]
-  },
-  { "id": 9, "name": "Test", "duration": 5, "diffculty": "moderate" },
-  { "id": 10, "name": "Test 2", "duration": 12, "diffculty": "easy" },
-  { "id": 11, "name": "Hello", "duration": 13, "diffculty": "Advance" },
-  { "id": 12, "name": "Hello", "duration": 13, "diffculty": "Advance" },
-  { "id": 13, "name": "Hello", "duration": 13, "diffculty": "Advance" },
-  { "id": 14, "name": "vedant", "duration": 14, "diffculty": "easy af" },
-  { "id": 15, "name": "anuj", "duration": "5", "diffculty": "advance" },
-  { "id": 16, "name": "sam", "duration": "12", "diffculty": "moderate" },
-  { "id": 17, "name": "sam", "duration": "12", "diffculty": "moderate" }
+  }
 ]

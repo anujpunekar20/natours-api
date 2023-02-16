@@ -3,14 +3,23 @@ const Tour = require('../models/tourModel');
 
 exports.getAllTours = async (req, res) => {
     try{
-        const tours = await Tour.find();
+        if(req.query){
+            const toursFiltered = await Tour.find(req.query);
 
-        res.status(200).json({
-            status: 'success',
-            data: {
-                tours
-            }
-        });
+            res.status(200).json({
+                status: 'success',
+                data: toursFiltered
+            })
+        }else{
+            const tours = await Tour.find();
+
+            res.status(200).json({
+                status: 'success',
+                data: {
+                    tours
+                }
+            });
+        }
     }
     catch(err){
         res.status(404).json({

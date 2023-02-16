@@ -1,5 +1,4 @@
 // node modules
-const { json } = require('body-parser');
 const express = require('express');
 const { networkInterfaces } = require('os');
 const morgan = require('morgan'); 
