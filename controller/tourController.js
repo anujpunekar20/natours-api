@@ -1,10 +1,34 @@
-// const fs = require('fs');
+const { json } = require('body-parser');
+const fs = require('fs');
 const Tour = require('../models/tourModel');
+
+// const jsonData = Object.keys(JSON.parse(fs.readFileSync('./dev-data/data/tours-simple.json')));
+// function getNestedKeys(jsonData, arr) {
+//     for (const key in jsonData) {
+//       arr.push(key);
+//       if (typeof jsonData[key] === 'object') {
+//         getNestedKeys(jsonData[key], arr);
+//       }
+//     }
+//     return arr;
+//   }
+  
+//   // Call the function to get the keys of nested objects
+//   const keysArray = getNestedKeys(jsonData, []);
+  
+//   // Write the array of keys to a new JSON file
+//   fs.writeFileSync('keys.json', JSON.stringify(keysArray, null, 2));
 
 exports.getAllTours = async (req, res) => {
     try{
+        const queryObj = {...req.query};
+        const excludedFields = ['path','sort','limit'];
+        excludedFields.forEach(el => delete queryObj[el]);
+        const query = Tour.find(queryObj)
+        
+
         if(req.query){
-            const toursFiltered = await Tour.find(req.query);
+            const toursFiltered = await query;
 
             res.status(200).json({
                 status: 'success',
