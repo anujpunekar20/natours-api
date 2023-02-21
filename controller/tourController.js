@@ -24,27 +24,36 @@ exports.getAllTours = async (req, res) => {
         const queryObj = {...req.query};
         const excludedFields = ['path','sort','limit'];
         excludedFields.forEach(el => delete queryObj[el]);
-        const query = Tour.find(queryObj)
         
-
-        if(req.query){
-            const toursFiltered = await query;
-
-            res.status(200).json({
-                status: 'success',
-                data: toursFiltered
-            })
+        let queryStr = JSON.stringify(queryObj);
+        queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`);
+        console.log(JSON.parse(queryStr));
+        
+        let query = Tour.find(JSON.parse(queryStr));
+        
+        if(req.query.sort){
+            const sortBy = req.query.sort.split(',').join(' ');
+            query = query.sort(sortBy);
         }else{
-            const tours = await Tour.find();
-
-            res.status(200).json({
-                status: 'success',
-                data: {
-                    tours
-                }
-            });
+            query = query.sort('-createdAt'); 
         }
-    }
+
+        // fields limit
+        if(req.query.fields){
+            const fields = req.query.fields.split(',').join(' ');
+            query = query.select(fields);
+        }else{
+            query = query.select('-__v');
+        }
+
+        const toursFiltered = await query;
+
+        res.status(200).json({
+            status: 'success',
+            result: toursFiltered.length,
+            data: toursFiltered
+        })
+        }
     catch(err){
         res.status(404).json({
             status: "fail",
