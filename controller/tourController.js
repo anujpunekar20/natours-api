@@ -40,8 +40,9 @@ exports.getAllTours = async (req, res) => {
 
         // fields limit
         if(req.query.fields){
-            const fields = req.query.fields.split(',').join(' ');
-            query = query.select(fields);
+            const fields = req.query.fields.split(',');
+            const fieldsRequired = fields.flatMap(num => num) 
+            query = query.select(fieldsRequired);
         }else{
             query = query.select('-__v');
         }
