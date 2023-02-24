@@ -1,144 +1,130 @@
-const { json } = require('body-parser');
-const fs = require('fs');
-const Tour = require('../models/tourModel');
-
-// const jsonData = Object.keys(JSON.parse(fs.readFileSync('./dev-data/data/tours-simple.json')));
-// function getNestedKeys(jsonData, arr) {
-//     for (const key in jsonData) {
-//       arr.push(key);
-//       if (typeof jsonData[key] === 'object') {
-//         getNestedKeys(jsonData[key], arr);
-//       }
-//     }
-//     return arr;
-//   }
-  
-//   // Call the function to get the keys of nested objects
-//   const keysArray = getNestedKeys(jsonData, []);
-  
-//   // Write the array of keys to a new JSON file
-//   fs.writeFileSync('keys.json', JSON.stringify(keysArray, null, 2));
+const Tour = require("../models/tourModel");
 
 exports.getAllTours = async (req, res) => {
-    try{
-        const queryObj = {...req.query};
-        // const excludedFields = ['path','sort','limit'];
-        // excludedFields.forEach(el => delete queryObj[el]);
-        
-        let queryStr = JSON.stringify(queryObj);
-        queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`);
-        const parsedStr = JSON.parse(queryStr);
-        console.log(parsedStr);
-        
-        let query = Tour.find(parsedStr);
-        
-        if(req.query.sort){
-            const sortBy = req.query.sort.split(',').join(' ');
-            query = query.sort(sortBy);
-        }else{
-            query = query.sort('-createdAt'); 
-        }
+  try {
+    console.log(req.query);
+    // BUILD QUERY
+    // 1A) FILTERING
+    // eslint-disable-next-line node/no-unsupported-features/es-syntax
+    const queryObj = { ...req.query };
+    const excludedFields = ['page', 'sort', 'limit', 'fields'];
+    excludedFields.forEach((el) => delete queryObj[el]);
 
-        // fields limit
-        if(req.query.fields){
-            const fields = req.query.fields.split(',').join(' ');
-            // const fieldsRequired = fields.flatMap(num => num) 
-            query = query.select(fields);
-        }else{
-            query = query.select('-__v');
-        }
+    // 1B) Advanced filtering
+    let queryStr = JSON.stringify(queryObj);
+    queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
 
-        // pagination
-        const page = req.query.page * 1 || 1;
-        const limit = req.query.limit * 1 || 100;
-        const skip = (page - 1) * limit;
+    let query = Tour.find(JSON.parse(queryStr));
 
-        query = query.skip(skip).limit(limit);
-
-        // execute query
-        const tours = await query;
-
-        res.status(200).json({
-            status: 'success',
-            result: tours.length,
-            data: tours
-        })
-        }
-    catch(err){
-        res.status(404).json({
-            status: "fail",
-            message: err
-        })
+    // 2) Sorting
+    if (req.query.sort) {
+      const sortBy = req.query.sort.split(',').join(' ');
+      query = query.sort(sortBy);
+    } else {
+      query = query.sort('-createdAt');
     }
+
+    // 3) Field Limiting
+    if (req.query.fields) {
+      const fields = req.query.fields.split(',').join(' ');
+      query = query.select(fields);
+    } else {
+      query = query.select('-__v');
+    } 
+
+    //EXECUTE QUERY
+    const tours = await query;
+
+    // const tours = await Tour.find()
+    //   .where('duration')
+    //   .equals(5)
+    //   .where('difficulty')
+    //   .equals('easy');
+
+    // SEND RESPONSE
+    res.status(200).json({
+      status: 'success',
+      requestedAt: req.requestTime,
+      results: tours.length,
+      data: {
+        tours: tours,
+      },
+    });
+  } catch (err) {
+    res.status(404).json({
+      status: 'fail',
+      message: err,
+    });
+  }
 };
 
-exports.getToursById = async (req, res) => {
-    try{
-        const tour = await Tour.findById(req.params.id);
-        res.status(200).json({
-            status: 'success',
-                data: {
-                    tour
-                }
-            });
-    }catch(err){
-        res.status(404).json({
-            status: "fail",
-            message: err
-        })
-    }
-        
-    };
+exports.getTour = async (req, res) => {
+  try {
+    const tour = await Tour.findById(req.params.id);
+    res.status(200).json({
+      status: 'success',
+      //value.length
+      data: {
+        tour, // "tours" is the key and "tourData" is the value
+      }, //In ES6, we don't have to specify the key and value if the both have the same name,
+    });
+  } catch (err) {
+    res.status(404).json({
+      status: 'fail',
+      message: err,
+    });
+  }
+};
 
-exports.addNewTours = async (req, res) => {
-    try {
-        const newTour = await Tour.create(req.body);
-    
-        res.status(201).json({
-            status: 'success',
-            data: {
-                tour: newTour
-            }
-        });
-    } catch(err) {
-        res.status(400).json({
-            status: 'fail',
-            message: "Invalid data sent"
-        });
-    }
-}
+exports.createTour = async (req, res) => {
+  try {
+    const newTour = await Tour.create(req.body);
+    res.status(201).json({
+      status: 'success',
+      data: {
+        tour: newTour,
+      },
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: 'fail',
+      message: 'Invalid data sent!',
+    });
+  }
+};
 
-exports.updateTour = async (req,res) => {
-    try{
-        const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
-            new: true,
-            runValidators: true
-        });
-        res.status(201).json({
-            status: 'update',
-            data: {
-                tour
-            }
-        });
-    }catch(err){
-        res.status(404).json({
-            status: 'fail',
-            message: err
-        }) 
-    }
+exports.updateTour = async (req, res) => {
+  try {
+    const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    });
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        tour: tour,
+      },
+    });
+  } catch (err) {
+    res.status(404).json({
+      status: 'fail',
+      message: err,
+    });
+  }
 };
 
 exports.deleteTour = async (req, res) => {
-    try{
-        const tour = await Tour.findByIdAndDelete(req.params.id);
-        res.status(204).json({
-            status: 'deleted',
-            message: null
-        });
-    }catch(err){
-        res.status(404).json({
-            status: 'fail',
-            message: err
-        });
-    }
-}
+  try {
+    await Tour.findByIdAndDelete(req.params.id);
+    res.status(204).json({
+      status: 'success',
+      data: null,
+    });
+  } catch (err) {
+    res.status(404).json({
+      status: 'fail',
+      message: err,
+    });
+  }
+};

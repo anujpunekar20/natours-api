@@ -1,31 +1,31 @@
-// node modules
 const express = require('express');
-const { networkInterfaces } = require('os');
-const morgan = require('morgan'); 
+const morgan = require('morgan');
+
 const tourRouter = require('./routes/tourRoutes');
-const userRouter = require('./routes/userRoutes'); 
+const userRouter = require('./routes/userRoutes');
 
 const app = express();
 
-// MIDDLEWARES
+// 1) MIDDLEWARES
 
-if(process.env.NODE_ENV === 'development'){
-    app.use(morgan('dev'));
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
 }
 
 app.use(express.json());
+app.use(express.static(`${__dirname}/public`));
 
 app.use((req, res, next) => {
-    console.log('hello anuj');
-    next();
+  console.log('Hello form the middleware!👋');
+  next();
 });
 
 app.use((req, res, next) => {
-    req.requestTime = new Date().toISOString();
-    next();
-})
+  req.requestTime = new Date().toISOString();
+  next();
+});
 
-// ROUTES
+//3) ROUTES
 
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);

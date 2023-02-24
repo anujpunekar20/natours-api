@@ -8,11 +8,11 @@ const router = express.Router();
 router
     .route('/')
     .get(tourController.getAllTours)
-    .post(tourController.addNewTours)
+    .post(tourController.createTour)
 
 router
     .route('/:id')
-    .get(tourController.getToursById)
+    .get(tourController.getTour)
     .patch(tourController.updateTour)
     .delete(tourController.deleteTour)
 
