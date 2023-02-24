@@ -22,14 +22,15 @@ const Tour = require('../models/tourModel');
 exports.getAllTours = async (req, res) => {
     try{
         const queryObj = {...req.query};
-        const excludedFields = ['path','sort','limit'];
-        excludedFields.forEach(el => delete queryObj[el]);
+        // const excludedFields = ['path','sort','limit'];
+        // excludedFields.forEach(el => delete queryObj[el]);
         
         let queryStr = JSON.stringify(queryObj);
         queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`);
-        console.log(JSON.parse(queryStr));
+        const parsedStr = JSON.parse(queryStr);
+        console.log(parsedStr);
         
-        let query = Tour.find(JSON.parse(queryStr));
+        let query = Tour.find(parsedStr);
         
         if(req.query.sort){
             const sortBy = req.query.sort.split(',').join(' ');
@@ -40,19 +41,27 @@ exports.getAllTours = async (req, res) => {
 
         // fields limit
         if(req.query.fields){
-            const fields = req.query.fields.split(',');
-            const fieldsRequired = fields.flatMap(num => num) 
-            query = query.select(fieldsRequired);
+            const fields = req.query.fields.split(',').join(' ');
+            // const fieldsRequired = fields.flatMap(num => num) 
+            query = query.select(fields);
         }else{
             query = query.select('-__v');
         }
 
-        const toursFiltered = await query;
+        // pagination
+        const page = req.query.page * 1 || 1;
+        const limit = req.query.limit * 1 || 100;
+        const skip = (page - 1) * limit;
+
+        query = query.skip(skip).limit(limit);
+
+        // execute query
+        const tours = await query;
 
         res.status(200).json({
             status: 'success',
-            result: toursFiltered.length,
-            data: toursFiltered
+            result: tours.length,
+            data: tours
         })
         }
     catch(err){
